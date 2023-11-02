@@ -358,6 +358,5 @@ The Macromolecular Transmission Format (MMTF) is a compact binary format to tran
   parseMMTF('1p38.mmtf')
   parseMMTF(1p38_mmtf_structure_object)
 
-
-
-
+For large scale calculations with distributed parallel frameworks such as PySpark we recommend the use of Hadoop Sequence Files. The entire PDB archive can be downloaded in the full and reduced representations:
+https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar and https://mmtf.rcsb.org/v1.0/hadoopfiles/reduced.tar
