@@ -34,7 +34,7 @@ in ``parse``:
       parsePDBHeader    parsePQR          parseSTAR         parseChainsList   parseDCD          
       parseEMDStream    parseHiCStream    parseNMD          parsePDBStream    parsePSF          
       parseSTRIDE       parseCIF          parseDSSP         parseHeatmap      parseModes        
-      parsePDB          parsePfamPDBs     parseSparseMatrix  
+      parsePDB          parseMMTF         parsePfamPDBs     parseSparseMatrix  
 
 When using :func:`.parsePDB`, usually an identifier will be sufficient,
 If corresponding file is found in the current working directory, it will be
@@ -346,4 +346,18 @@ This behavior is useful in interactive sessions, but may be problematic for
 automated tasks as the messages are printed to stderr.  The level of verbosity
 can be controlled using :func:`.confProDy` function, and calling it as
 ``confProDy(verbosity='none')`` will stop all information messages permanently.
+
+Reading in Hadoop Sequence Files using PySpark
+-------------------------------------------------------------------------------
+
+The Macromolecular Transmission Format (MMTF) is a compact binary format to transmit and store biomolecular structures (https://mmtf.rcsb.org). MMTF files or structure objects can be read into ProDy as an atom group by:
+
+.. ipython:: python
+
+  parseMMTF('1p38')
+  parseMMTF('1p38.mmtf')
+  parseMMTF(1p38_mmtf_structure_object)
+
+
+
 
