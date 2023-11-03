@@ -360,3 +360,86 @@ The Macromolecular Transmission Format (MMTF) is a compact binary format to tran
 
 For large scale calculations with distributed parallel frameworks such as PySpark we recommend the use of Hadoop Sequence Files. The entire PDB archive can be downloaded in the full and reduced representations:
 https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar and https://mmtf.rcsb.org/v1.0/hadoopfiles/reduced.tar
+
+We can download the hadoop sequence files using wget or curl:
+
+.. code:: ipython3
+
+    $ wget https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar
+    $ tar -xvf full.tar
+
+or
+
+.. code:: ipython3
+
+    $ curl -O https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar
+    $ tar -xvf full.tar
+
+This will download and unpack the content of the Hadoop Sequence File to
+a folder.
+
+In order to perform any analysis using PySpark, we will need initizalize
+a Spark session. Make sure that the proper packages are imported.
+
+.. code:: ipython3
+
+    from pyspark.sql import SparkSession
+    from pyspark import SparkContext
+    
+    spark = SparkSession.builder.getOrCreate()
+    sc = spark.sparkContext
+
+
+.. parsed-literal::
+
+    Setting default log level to "WARN".
+    To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+    23/11/02 19:08:40 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+
+
+We can then read in the sequence file through the spark context. With
+large computing resources, the full sequence file can be analyzed quite
+efficiently. ‘input/full/’ is the path to the folder that contains the
+partitioned sequence files.
+
+.. code:: ipython3
+
+    mmtf_data = sc.sequenceFile('input/full/')
+
+**mmtf_data** is an RDD (Resilient Distributed Dataset) on which you can
+apply PySpark functions such as map, filter, or count. Each entry is a a
+tuple of the form **(‘PDB_ID’, byte_array)**. For example:
+
+.. code:: ipython3
+
+    sample = mmtf_data.take(1)
+    sample
+
+
+.. parsed-literal::
+
+    [('7MYN',
+      bytearray(b'\x1f\x8b\x08\x00..))]
+
+
+
+In order to parse the byte-array to a ProDy Atom Group:
+
+.. code:: ipython3
+
+    data = gzip.decompress(sample[0][1])
+    unpack = msgpack.unpackb(data)
+    dec = mmtf.MMTFDecoder()
+    dec.decode_data(unpack)
+    
+    structure = parseMMTF(dec)
+    view3D(structure)
+
+
+.. parsed-literal::
+
+    @> 10335 atoms and 1 coordinate set(s) were parsed in 0.04s.
+
+.. parsed-literal::
+
+    <py3Dmol.view at 0x7f7ce9b01490>
