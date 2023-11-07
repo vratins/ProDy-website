@@ -402,7 +402,7 @@ is false by default and uses on-heap memory. Off-heap memory can be used
 for certain operations like shuffle and can help mitigate garbage
 collection overhead.
 
-.. code:: ipython3
+.. ipython:: python
 
     from pyspark.sql import SparkSession
     from pyspark import SparkContext
@@ -426,7 +426,7 @@ efficiently. ‘input/full/’ is the path to the folder that contains the
 partitioned sequence files. We will sample 10% of the entire PDB
 archive.
 
-.. code:: ipython3
+.. ipython:: python
 
     mmtf_full = sc.sequenceFile('input/full/')
     mmtf_sample = mmtf_full.sample(False, 0.1).persist()
@@ -436,7 +436,7 @@ Dataset) on which you can apply PySpark functions such as map, filter,
 or count. Each entry is a a tuple of the form **(‘PDB_ID’,
 byte_array)**. For example:
 
-.. code:: ipython3
+.. ipython:: python
 
     sample = mmtf_sample.take(1)
     sample
@@ -451,7 +451,7 @@ byte_array)**. For example:
 :func:`.parseMMTF` can parse MMTF files, structure objects, and even byte
 arrays. In order to parse the byte-array to a ProDy Atom Group:
 
-.. code:: ipython3
+.. ipython:: python
 
     struc_byte_array = sample[0][1]
     
@@ -474,7 +474,7 @@ retrieve information, whether to extract structures, or to perform
 exploratory data analysis. Here, we will go through the entire sampled
 dataset and return the top 10 PDB structures sorted by number of atoms.
 
-.. code:: ipython3
+.. ipython:: python
 
     def get_num_atoms(tuple_entry):
         structure = parseMMTF(tuple_entry[1])
@@ -502,6 +502,6 @@ dataset and return the top 10 PDB structures sorted by number of atoms.
 
 We can now terminate the spark session.
 
-.. code:: ipython3
+.. ipython:: python
 
     sc.stop()
