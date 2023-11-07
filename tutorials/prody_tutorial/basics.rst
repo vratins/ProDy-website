@@ -361,12 +361,17 @@ The Macromolecular Transmission Format (MMTF) is a compact binary format to tran
 For large scale calculations with distributed parallel frameworks such as PySpark we recommend the use of Hadoop Sequence Files. The entire PDB archive can be downloaded in the full and reduced representations:
 https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar and https://mmtf.rcsb.org/v1.0/hadoopfiles/reduced.tar
 
+
 We can download the hadoop sequence files using wget or curl:
+
+.. code:: ipython3
 
     $ wget https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar
     $ tar -xvf full.tar
 
 or
+
+.. code:: ipython3
 
     $ curl -O https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar
     $ tar -xvf full.tar
@@ -374,4 +379,129 @@ or
 This will download and unpack the content of the Hadoop Sequence File to
 a folder.
 
+In order to perform any analysis using PySpark
+(https://spark.apache.org/docs/latest/api/python/index.html), we will
+need initizalize a Spark session. Make sure that the proper packages are
+imported.
 
+You can initialize PySpark with certain parameters to optimize
+perfomance, and adjust based on the available specifications of your
+computing environments.
+
+**Driver memory**: This sets the amount of memory to use for the Spark
+driver process, which is the process running the user code that creates
+RDDs, accumulators, and broadcast variables, and manages their storage
+in memory. Here it’s being set to 4 gigabytes.
+
+**Executor memory**: This sets the memory size for Spark executors.
+Executors are worker nodes’ processes in charge of running the tasks in
+a Spark job. Here each executor is allocated 50 gigabytes of memory.
+
+**offHeap size**: This enables off-heap memory allocation. This setting
+is false by default and uses on-heap memory. Off-heap memory can be used
+for certain operations like shuffle and can help mitigate garbage
+collection overhead.
+
+.. code:: ipython3
+
+    from pyspark.sql import SparkSession
+    from pyspark import SparkContext
+    
+    from pyspark.sql import SparkSession
+    
+    spark = SparkSession.builder \
+        .appName("StructureAnalysis") \
+        .config("spark.driver.memory", "4g") \
+        .config("spark.executor.memory", "50g") \
+        .config("spark.memory.offHeap.enabled", True) \
+        .config("spark.memory.offHeap.size","8g") \
+        .getOrCreate()
+    
+    sc = spark.sparkContext
+
+
+We can then read in the sequence file through the spark context. With
+large computing resources, the full sequence file can be analyzed quite
+efficiently. ‘input/full/’ is the path to the folder that contains the
+partitioned sequence files. We will sample 10% of the entire PDB
+archive.
+
+.. code:: ipython3
+
+    mmtf_full = sc.sequenceFile('input/full/')
+    mmtf_sample = mmtf_full.sample(False, 0.1).persist()
+
+**mmtf_full** and **mmtf_sample** are RDDs (Resilient Distributed
+Dataset) on which you can apply PySpark functions such as map, filter,
+or count. Each entry is a a tuple of the form **(‘PDB_ID’,
+byte_array)**. For example:
+
+.. code:: ipython3
+
+    sample = mmtf_sample.take(1)
+    sample
+                                                                                  
+
+.. parsed-literal::
+
+    [('1GQ8',
+      bytearray(b'\x1f\x8b...'))]
+
+
+:func:`.parseMMTF` can parse MMTF files, structure objects, and even byte
+arrays. In order to parse the byte-array to a ProDy Atom Group:
+
+.. code:: ipython3
+
+    struc_byte_array = sample[0][1]
+    
+    structure = parseMMTF(struc_byte_array)
+    showProtein(structure)
+
+
+.. parsed-literal::
+
+    @> 2770 atoms and 1 coordinate set(s) were parsed in 0.01s.
+
+.. parsed-literal::
+
+    <py3Dmol.view at 0x7fb4d4671190>
+
+
+
+We can also write a function that can be mapped to the entire dataset to
+retrieve information, whether to extract structures, or to perform
+exploratory data analysis. Here, we will go through the entire sampled
+dataset and return the top 10 PDB structures sorted by number of atoms.
+
+.. code:: ipython3
+
+    def get_num_atoms(tuple_entry):
+        structure = parseMMTF(tuple_entry[1])
+        
+        return (structure.numAtoms(),structure.getTitle())
+    
+    top_10_entries = mmtf_sample.map(get_num_atoms) 
+    top_10_entries.takeOrdered(10, key=lambda x: -x[0])
+
+
+.. parsed-literal::
+
+    [(1324599, '8G3D'),
+     (1265783, '7UNG'),
+     (1234795, '5Y6P'),
+     (1218816, '7SQC'),
+     (1013398, '6KGX'),
+     (662907, '7AS5'),
+     (617133, '7R5J'),
+     (590573, '4V9P'),
+     (511395, '4V8P'),
+     (411205, '4U3U')]
+
+
+
+We can now terminate the spark session.
+
+.. code:: ipython3
+
+    sc.stop()
