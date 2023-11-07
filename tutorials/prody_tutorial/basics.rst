@@ -357,12 +357,13 @@ The Macromolecular Transmission Format (MMTF) is a compact binary format to tran
   parseMMTF('1p38.mmtf')
   parseMMTF(1p38_mmtf_structure_object)
 
+MMTF Structure objects are created when an mmtf file is read through modules such as mmtf-python (https://mmtf.rcsb.org/start-with-python.html).
+
 The function can also fetch mmtf files and read them into an AtomGroup by:
 
 .. ipython:: python
 
   parseMMTF('1p38')
-
 
 Reading in Hadoop Sequence Files using PySpark
 -------------------------------------------------------------------------------
