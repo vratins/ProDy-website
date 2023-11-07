@@ -347,16 +347,25 @@ automated tasks as the messages are printed to stderr.  The level of verbosity
 can be controlled using :func:`.confProDy` function, and calling it as
 ``confProDy(verbosity='none')`` will stop all information messages permanently.
 
-Reading in Hadoop Sequence Files using PySpark
+MMTF Files
 -------------------------------------------------------------------------------
 
-The Macromolecular Transmission Format (MMTF) is a compact binary format to transmit and store biomolecular structures (https://mmtf.rcsb.org). MMTF files or structure objects can be read into ProDy as an atom group by:
+The Macromolecular Transmission Format (MMTF) is a compact binary format to transmit and store biomolecular structures (https://mmtf.rcsb.org). MMTF files or structure objects can be read into ProDy as an atom group using the :func:`.parseMMTF` function. 
+
+.. ipython:: python
+
+  parseMMTF('1p38.mmtf')
+  parseMMTF(1p38_mmtf_structure_object)
+
+The function can also fetch mmtf files and read them into an AtomGroup by:
 
 .. ipython:: python
 
   parseMMTF('1p38')
-  parseMMTF('1p38.mmtf')
-  parseMMTF(1p38_mmtf_structure_object)
+
+
+Reading in Hadoop Sequence Files using PySpark
+-------------------------------------------------------------------------------
 
 For large scale calculations with distributed parallel frameworks such as PySpark we recommend the use of Hadoop Sequence Files. The entire PDB archive can be downloaded in the full and reduced representations:
 https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar and https://mmtf.rcsb.org/v1.0/hadoopfiles/reduced.tar
