@@ -363,14 +363,10 @@ https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar and https://mmtf.rcsb.org/v1.0/h
 
 We can download the hadoop sequence files using wget or curl:
 
-.. code:: ipython3
-
     $ wget https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar
     $ tar -xvf full.tar
 
 or
-
-.. code:: ipython3
 
     $ curl -O https://mmtf.rcsb.org/v1.0/hadoopfiles/full.tar
     $ tar -xvf full.tar
